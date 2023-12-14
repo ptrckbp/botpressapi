@@ -102,19 +102,19 @@ const integration = new botpress.Integration({
       throw new Error('Handler received an empty message id')
     }
 
-    logger.forBot().debug(`Received message from user ${userId}: ${data.message.text}`)
+    logger.forBot().debug(`Received message from user ${userId}: ${JSON.stringify(data.message.payload)}`)
     await client.createMessage({
       tags: {
         [idTag]: messageId.toString(),
         [fromUserIdTag]: userId.toString(),
         ...(chatId && { [chatIdTag]: chatId.toString() }),
       },
-      type: 'text',
+      type: data.message.payload.type,
       userId: user.id,
       conversationId: conversation.id,
-      payload: { text: data.message.text },
+      payload: data.message.payload,
     })
-    logger.forBot().debug(`Done creating message in botpress for user ${userId}: ${data.message.text}`)
+    logger.forBot().debug(`Done creating message in botpress for user ${userId}: ${JSON.stringify(data.message.payload)}`)
   },
 })
 
