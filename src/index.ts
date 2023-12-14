@@ -1,67 +1,121 @@
 import * as botpress from '.botpress'
+import { axios, Conversation } from '@botpress/client'
 
-console.info('starting integration')
 
-class NotImplementedError extends Error {
-  constructor() {
-    super('Not implemented')
+const INTEGRATION_NAME = 'botpressapi'
+const idTag = `${INTEGRATION_NAME}:id` as const
+const chatIdTag = `${INTEGRATION_NAME}:chatId` as const // Conversation the message belongs to (see: https://core.telegram.org/bots/api#chat)
+const fromUserIdTag = `${INTEGRATION_NAME}:fromUserId` as const
+
+export type IntegrationLogger = Parameters<botpress.IntegrationProps['handler']>[0]['logger']
+
+export function getChat(conversation: Conversation): string {
+  const chat = conversation.tags[idTag]
+
+  if (!chat) {
+    throw Error(`No chat found for conversation ${conversation.id}`)
   }
+
+  return chat
 }
 
-export default new botpress.Integration({
-  register: async () => {
-    /**
-     * This is called when a bot installs the integration.
-     * You should use this handler to instanciate ressources in the external service and ensure that the configuration is valid.
-     */
+const sendToWebhook = async ({ payload, ctx, conversation, ack, logger }) => {
+
+  await axios.post(ctx.configuration.externalWebhookUrl, payload)
+
+  const chat = getChat(conversation)
+
+  logger.forBot().debug(`Sent message to BotpressApi chat ${chat}:`, JSON.stringify(payload))
+
+}
+
+const integration = new botpress.Integration({
+  register: async ({ webhookUrl, ctx }) => {
   },
-  unregister: async () => {
-    /**
-     * This is called when a bot removes the integration.
-     * You should use this handler to instanciate ressources in the external service and ensure that the configuration is valid.
-     */
+  unregister: async ({ ctx }) => {
   },
   actions: {},
   channels: {
     channel: {
       messages: {
-        text: async () => {
-          throw new NotImplementedError()
-        },
-        image: async () => {
-          throw new NotImplementedError()
-        },
-        markdown: async () => {
-          throw new NotImplementedError()
-        },
-        audio: async () => {
-          throw new NotImplementedError()
-        },
-        video: async () => {
-          throw new NotImplementedError()
-        },
-        file: async () => {
-          throw new NotImplementedError()
-        },
-        location: async () => {
-          throw new NotImplementedError()
-        },
-        carousel: async () => {
-          throw new NotImplementedError()
-        },
-        card: async () => {
-          throw new NotImplementedError()
-        },
-        choice: async () => {
-          throw new NotImplementedError()
-        },
-        dropdown: async () => {
-          throw new NotImplementedError()
-        },
+        text: sendToWebhook,
+        image: sendToWebhook,
+        markdown: sendToWebhook,
+        audio: sendToWebhook,
+        video: sendToWebhook,
+        file: sendToWebhook,
+        location: sendToWebhook,
+        card: sendToWebhook,
+        carousel: sendToWebhook,
+        dropdown: sendToWebhook,
+        choice: sendToWebhook,
       },
     },
   },
-  handler: async () => {
-    throw new NotImplementedError()
+  handler: async ({ req, client, ctx, logger }) => {
+    logger.forBot().debug('Handler received request from BotpressApi with payload:', req.body)
+
+    if (!req.body) {
+      logger.forBot().warn('Handler received an empty body, so the message was ignored')
+      return
+    }
+
+    const data = JSON.parse(req.body)
+
+
+    const conversationId = data.message.chat.id
+
+    if (!conversationId) {
+      throw new Error('Handler received message with empty "chat.id" value')
+    }
+
+    const userId = data.message.from?.id
+    const chatId = data.message.chat?.id
+
+    if (!userId) {
+      throw new Error('Handler received message with empty "from.id" value')
+    }
+
+    const { conversation } = await client.getOrCreateConversation({
+      channel: 'channel',
+      tags: {
+        [idTag]: conversationId.toString(),
+        [fromUserIdTag]: userId.toString(),
+        ...(chatId && { [chatIdTag]: chatId.toString() }),
+      },
+    })
+
+
+    const userName = data.message.from?.name 
+
+    const { user } = await client.getOrCreateUser({
+      tags: {
+        [idTag]: userId.toString(),
+      },
+      ...(userName && { name: userName }),
+    })
+
+
+    const messageId = data.message.message_id
+
+    if (!messageId) {
+      throw new Error('Handler received an empty message id')
+    }
+
+    logger.forBot().debug(`Received message from user ${userId}: ${data.message.text}`)
+    await client.createMessage({
+      tags: {
+        [idTag]: messageId.toString(),
+        [fromUserIdTag]: userId.toString(),
+        ...(chatId && { [chatIdTag]: chatId.toString() }),
+      },
+      type: 'text',
+      userId: user.id,
+      conversationId: conversation.id,
+      payload: { text: data.message.text },
+    })
+    logger.forBot().debug(`Done creating message in botpress for user ${userId}: ${data.message.text}`)
   },
 })
+
+export default integration
