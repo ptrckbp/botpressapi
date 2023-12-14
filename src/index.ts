@@ -108,6 +108,7 @@ const integration = new botpress.Integration({
         [idTag]: messageId.toString(),
         [fromUserIdTag]: userId.toString(),
         ...(chatId && { [chatIdTag]: chatId.toString() }),
+        metadata: JSON.stringify(data.message.metadata)
       },
       type: data.message.payload.type,
       userId: user.id,

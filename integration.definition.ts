@@ -14,7 +14,7 @@ export default new IntegrationDefinition({
   channels: {
     channel: {
       messages: messages.defaults,
-      message: { tags: { id: {}, fromUserId: {}, chatId: {} } },
+      message: { tags: { id: {}, fromUserId: {}, chatId: {}, metadata: {} } },
       conversation: {
         tags: { id: {}, fromUserId: {}, chatId: {} },
         creation: { enabled: true, requiredTags: ['id'] },
