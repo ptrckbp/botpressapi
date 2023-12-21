@@ -92,6 +92,7 @@ const integration = new botpress.Integration({
     const { user } = await client.getOrCreateUser({
       tags: {
         [idTag]: userId.toString(),
+        metadata: JSON.stringify(data.user.metadata)
       },
       ...(userName && { name: userName }),
     })

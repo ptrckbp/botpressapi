@@ -24,6 +24,7 @@ export default new IntegrationDefinition({
   user: {
     tags: {
       id: {},
+      metadata: {}
     },
     creation: { enabled: true, requiredTags: ['id'] },
   },
