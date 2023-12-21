@@ -82,7 +82,8 @@ const integration = new botpress.Integration({
         [idTag]: conversationId.toString(),
         [fromUserIdTag]: userId.toString(),
         ...(chatId && { [chatIdTag]: chatId.toString() }),
-        metadata: JSON.stringify(data.conversation.metadata)
+        metadata: JSON.stringify(data.conversation.metadata),
+        foreignKey: data.conversation.foreignKey
       },
     })
 
@@ -92,7 +93,8 @@ const integration = new botpress.Integration({
     const { user } = await client.getOrCreateUser({
       tags: {
         [idTag]: userId.toString(),
-        metadata: JSON.stringify(data.user.metadata)
+        metadata: JSON.stringify(data.user.metadata),
+        foreignKey: data.user.foreignKey
       },
       ...(userName && { name: userName }),
     })
@@ -110,7 +112,8 @@ const integration = new botpress.Integration({
         [idTag]: messageId.toString(),
         [fromUserIdTag]: userId.toString(),
         ...(chatId && { [chatIdTag]: chatId.toString() }),
-        metadata: JSON.stringify(data.message.metadata)
+        metadata: JSON.stringify(data.message.metadata),
+        foreignKey: data.message.foreignKey
       },
       type: data.message.payload.type,
       userId: user.id,
