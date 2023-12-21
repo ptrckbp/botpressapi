@@ -1,0 +1,5 @@
+- add foreign key to some tags for messages, users, and conversations (string is fine)
+- handle incorrects inputs (like missing foreign keys, or no user / conversation / message objects).
+- handle incorrect payloads (payload should work with botpress, otherwise, it should be marked as "custom")
+-- basically, tell the user what he / she should do from the api without docs.
+- remove all unnecessary code
