@@ -51,26 +51,41 @@ const integration = new botpress.Integration({
     },
   },
   handler: async ({ req, client, ctx, logger }) => {
+
     logger.forBot().debug('Handler received request from BotpressApi with payload:', req.body)
 
     if (!req.body) {
       logger.forBot().warn('Handler received an empty body, so the message was ignored')
-      return
+     
+      return {
+        status: 400,
+        body: 'Empty body',
+      }
     }
 
     const data = JSON.parse(req.body)
 
 
-    const conversationId = data.message.chat.id
+    const conversationId = data.message?.chat?.id
 
     if (!conversationId) {
-      throw new Error('Handler received message with empty "chat.id" value')
+      logger.forBot().warn('Handler received message with empty "chat.id" value, so the message was ignored')
+
+      return {
+        status: 400,
+        body: 'Expected message.chat.id',
+      }
     }
 
     const userId = data.message.from?.id
 
     if (!userId) {
-      throw new Error('Handler received message with empty "from.id" value')
+      logger.forBot().warn('Handler received message with empty "from.id" value, so the message was ignored')
+
+      return {
+        status: 400,
+        body: 'Expected message.from.id',
+      }
     }
 
     const { conversation } = await client.getOrCreateConversation({
@@ -98,7 +113,12 @@ const integration = new botpress.Integration({
     const messageId = data.message.message_id
 
     if (!messageId) {
-      throw new Error('Handler received an empty message id')
+      logger.forBot().warn('Handler received an empty message id, so the message was ignored')
+
+      return {
+        status: 400,
+        body: 'Expected message.message_id',
+      }
     }
 
     logger.forBot().debug(`Received message from user ${userId}: ${JSON.stringify(data.message.payload)}`)
