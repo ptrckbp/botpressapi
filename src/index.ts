@@ -122,7 +122,7 @@ const integration = new botpress.Integration({
     }
 
     logger.forBot().debug(`Received message from user ${userId}: ${JSON.stringify(data.message.payload)}`)
-    await client.createMessage({
+    const result = await client.createMessage({
       tags: {
         [idTag]: messageId.toString(),
         metadata: JSON.stringify(data.message.metadata),
@@ -134,6 +134,11 @@ const integration = new botpress.Integration({
       payload: data.message.payload,
     })
     logger.forBot().debug(`Done creating message in botpress for user ${userId}: ${JSON.stringify(data.message.payload)}`)
+
+    return {
+      status: 200,
+      body: JSON.stringify(result)
+    }
   },
 })
 

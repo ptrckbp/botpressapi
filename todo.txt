@@ -3,7 +3,7 @@
 - handle incorrect payloads (payload should work with botpress, otherwise, it should be marked as "custom")
 -- basically, tell the user what he / she should do from the api without docs.
 - [done] remove all unnecessary code
-- convert the inbound webhook to an api with responses.
+- [done] convert the inbound webhook to an api with responses.
 
 FUN Maybe for the future
 - allow different integrations to send messages to conversations of this integration.
