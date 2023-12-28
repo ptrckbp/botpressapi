@@ -4,8 +4,6 @@ import { axios, Conversation } from '@botpress/client'
 
 const INTEGRATION_NAME = 'botpressapi'
 const idTag = `${INTEGRATION_NAME}:id` as const
-const chatIdTag = `${INTEGRATION_NAME}:chatId` as const // Conversation the message belongs to (see: https://core.telegram.org/bots/api#chat)
-const fromUserIdTag = `${INTEGRATION_NAME}:fromUserId` as const
 
 export type IntegrationLogger = Parameters<botpress.IntegrationProps['handler']>[0]['logger']
 
@@ -70,7 +68,6 @@ const integration = new botpress.Integration({
     }
 
     const userId = data.message.from?.id
-    const chatId = data.message.chat?.id
 
     if (!userId) {
       throw new Error('Handler received message with empty "from.id" value')
@@ -80,8 +77,6 @@ const integration = new botpress.Integration({
       channel: 'channel',
       tags: {
         [idTag]: conversationId.toString(),
-        [fromUserIdTag]: userId.toString(),
-        ...(chatId && { [chatIdTag]: chatId.toString() }),
         metadata: JSON.stringify(data.conversation.metadata),
         foreignKey: data.conversation.foreignKey
       },
@@ -110,8 +105,6 @@ const integration = new botpress.Integration({
     await client.createMessage({
       tags: {
         [idTag]: messageId.toString(),
-        [fromUserIdTag]: userId.toString(),
-        ...(chatId && { [chatIdTag]: chatId.toString() }),
         metadata: JSON.stringify(data.message.metadata),
         foreignKey: data.message.foreignKey
       },
