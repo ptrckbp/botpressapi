@@ -24,6 +24,14 @@ const getInputIssues = (body: any): any[] => {
 };
 
 const handleIncoming = async ({ req, client, ctx, logger }) => {
+  // if path isn't /messages then return 404
+  if (req.path !== "/messages") {
+    return {
+      status: 404,
+      body: "Not found",
+    };
+  }
+
   const data = JSON.parse(req.body);
 
   const { userId, messageId, conversationId, type, text, payload } = data;
