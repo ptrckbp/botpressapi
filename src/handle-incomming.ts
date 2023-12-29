@@ -1,3 +1,4 @@
+import { Client } from "@botpress/client";
 import zod from "zod";
 
 const getInputIssues = (body: any): any[] => {
@@ -40,6 +41,19 @@ const handleIncoming = async ({ req, client, ctx, logger }) => {
     };
   }
 
+  const newAuthHeader = req.headers.authorization;
+  const token = newAuthHeader.split(" ")[1];
+
+  const integrationId = client.client.config.headers["x-integration-id"];
+  const botId = client.client.config.headers["x-bot-id"];
+
+  const newClientConfig = {
+    integrationId,
+    botId,
+    token,
+  }
+  const remotelyAuthenticatedClient = new Client(newClientConfig); // we use this client to make sure we are using a PAT token
+
   const data = JSON.parse(req.body);
 
   const { userId, messageId, conversationId, type, text, payload } = data;
@@ -53,49 +67,58 @@ const handleIncoming = async ({ req, client, ctx, logger }) => {
     };
   }
 
-  const { conversation } = await client.getOrCreateConversation({
-    channel: "channel",
-    tags: {
-      id: conversationId,
-    },
-  });
+  try {
+    const { conversation } =
+      await remotelyAuthenticatedClient.getOrCreateConversation({
+        channel: "channel",
+        tags: {
+          id: conversationId,
+        },
+      });
 
-  const { user } = await client.getOrCreateUser({
-    tags: {
-      id: userId,
-    },
-  });
+    const { user } = await remotelyAuthenticatedClient.getOrCreateUser({
+      tags: {
+        id: userId,
+      },
+    });
 
-  const botpressMessage = {
-    tags: {
-      id: messageId,
-    },
-    type,
-    text,
-    userId: user.id,
-    conversationId: conversation.id,
-    payload,
-  };
+    const botpressMessage = {
+      tags: {
+        id: messageId,
+      },
+      type,
+      text,
+      userId: user.id,
+      conversationId: conversation.id,
+      payload,
+    };
 
-  if (!payload) {
-    botpressMessage.payload = { text: text };
-  } else if (!payload.text) {
-    botpressMessage.payload.text = text;
-  }
+    if (!payload) {
+      botpressMessage.payload = { text: text };
+    } else if (!payload.text) {
+      botpressMessage.payload.text = text;
+    }
 
-  const { message } = await client.createMessage(botpressMessage);
-
-  logger
-    .forBot()
-    .debug(
-      `Done creating message in botpress for user ${userId}: ${JSON.stringify(
-        payload
-      )}`
+    const { message } = await remotelyAuthenticatedClient.createMessage(
+      botpressMessage
     );
-
+    return {
+      status: 200,
+      body: JSON.stringify({ message, user, conversation }),
+    };
+  } catch (error) {
+    // check if error is a 401
+    if (error?.code === 401) {
+      return {
+        status: 401,
+        body: "Unauthorized. Please add a valid token to the Authorization header. You can get it at https://app.botpress.cloud/profile/settings",
+      };
+    }
+  }
+  // return a generic error
   return {
-    status: 200,
-    body: JSON.stringify({ message, user, conversation }),
+    status: 400,
+    body: "Unknown Error! Please contact the Botpress Team",
   };
 };
 
