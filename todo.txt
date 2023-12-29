@@ -9,5 +9,17 @@
 - require a valid PAT
 
 FUN Maybe for the future
-- allow different integrations to send messages to conversations of this integration.
+- [CANCEL]  allow different integrations to send messages to conversations of this integration.
 -- idea : maybe use something like https://www.gomomento.com/
+
+Create a message from this: 
+{
+  "userId": "remoteUserId",
+  "messageId": "remoteMessageId",
+  "conversationId": "remoteConversationId",
+  "type": "textOrAnythingElse",
+  "text": "A",
+  "payload": {
+    "whatever": "message you"
+  }
+}
