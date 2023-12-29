@@ -18,8 +18,24 @@ export function getChat(conversation: Conversation): string {
   return chat;
 }
 
-const sendToWebhook = async ({ payload, ctx, conversation, ack, logger }) => {
-  await axios.post(ctx.configuration.externalWebhookUrl, payload);
+const sendToWebhook = async ({
+  payload,
+  ctx,
+  conversation,
+  ack,
+  logger,
+  user,
+  type,
+  message,
+}) => {
+  await axios.post(ctx.configuration.externalWebhookUrl, {
+    type,
+    payload,
+    conversationId: conversation.tags["botpressapi:id"],
+    botpressUserId: user.id,
+    botpressMessageId: message.id,
+    botpressConversationId: conversation.id,
+  });
 
   const chat = getChat(conversation);
 
@@ -60,113 +76,52 @@ const integration = new botpress.Integration({
         req.body
       );
 
-    if (!req.body) {
-      logger
-        .forBot()
-        .warn("Handler received an empty body, so the message was ignored");
-
-      return {
-        status: 400,
-        body: "Empty body",
-      };
-    }
-
-    const data = JSON.parse(req.body);
-
-    const conversationId = data.message?.chat?.id;
-
-    if (!conversationId) {
-      logger
-        .forBot()
-        .warn(
-          'Handler received message with empty "chat.id" value, so the message was ignored'
-        );
-
-      return {
-        status: 400,
-        body: "Expected message.chat.id",
-      };
-    }
-
-    const userId = data.message.from?.id;
-
-    if (!userId) {
-      logger
-        .forBot()
-        .warn(
-          'Handler received message with empty "from.id" value, so the message was ignored'
-        );
-
-      return {
-        status: 400,
-        body: "Expected message.from.id",
-      };
-    }
+    const { userId, messageId, conversationId, type, text, payload } =
+      JSON.parse(req.body);
 
     const { conversation } = await client.getOrCreateConversation({
       channel: "channel",
       tags: {
-        [idTag]: conversationId.toString(),
-        metadata: JSON.stringify(data.conversation.metadata),
-        foreignKey: data.conversation.foreignKey,
+        id: conversationId,
       },
     });
-
-    const userName = data.message.from?.name;
 
     const { user } = await client.getOrCreateUser({
       tags: {
-        [idTag]: userId.toString(),
-        metadata: JSON.stringify(data.user.metadata),
-        foreignKey: data.user.foreignKey,
+        id: userId,
       },
-      ...(userName && { name: userName }),
     });
 
-    const messageId = data.message.message_id;
-
-    if (!messageId) {
-      logger
-        .forBot()
-        .warn(
-          "Handler received an empty message id, so the message was ignored"
-        );
-
-      return {
-        status: 400,
-        body: "Expected message.message_id",
-      };
-    }
-
-    logger
-      .forBot()
-      .debug(
-        `Received message from user ${userId}: ${JSON.stringify(
-          data.message.payload
-        )}`
-      );
-    const result = await client.createMessage({
+    const botpressMessage = {
       tags: {
-        [idTag]: messageId.toString(),
-        metadata: JSON.stringify(data.message.metadata),
-        foreignKey: data.message.foreignKey,
+        id: messageId,
       },
-      type: data.message.payload.type,
+      type,
+      text,
       userId: user.id,
       conversationId: conversation.id,
-      payload: data.message.payload,
-    });
+      payload,
+    };
+
+    if (!payload) {
+      botpressMessage.payload = { text: text };
+    } else if (!payload.text) {
+      botpressMessage.payload.text = text;
+    }
+
+    const { message } = await client.createMessage(botpressMessage);
+
     logger
       .forBot()
       .debug(
         `Done creating message in botpress for user ${userId}: ${JSON.stringify(
-          data.message.payload
+          payload
         )}`
       );
 
     return {
       status: 200,
-      body: JSON.stringify(result),
+      body: JSON.stringify({ message, user, conversation }),
     };
   },
 });

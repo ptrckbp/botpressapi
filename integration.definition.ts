@@ -14,18 +14,16 @@ export default new IntegrationDefinition({
   channels: {
     channel: {
       messages: messages.defaults,
-      message: { tags: { id: {}, metadata: {}, foreignKey:{} } },
+      message: { tags: { id: {} } },
       conversation: {
-        tags: { id: {}, metadata: {}, foreignKey: {} },
+        tags: { id: {} },
         creation: { enabled: true, requiredTags: ['id'] },
       },
     },
   },
   user: {
     tags: {
-      id: {},
-      metadata: {},
-      foreignKey: {},
+      id: {}
     },
     creation: { enabled: true, requiredTags: ['id'] },
   },
