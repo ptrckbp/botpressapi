@@ -7,6 +7,7 @@
 - [done] remove all unnecessary code
 - [done] convert the inbound webhook to an api with responses.
 - require a valid PAT
+- [done] check if we have a valid webhook url, otherwise send an error message.
 
 FUN Maybe for the future
 - [CANCEL]  allow different integrations to send messages to conversations of this integration.

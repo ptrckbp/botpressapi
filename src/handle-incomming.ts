@@ -32,6 +32,14 @@ const handleIncoming = async ({ req, client, ctx, logger }) => {
     };
   }
 
+  // check if ctx.configuration.externalWebhookUrl is set
+  if (!ctx.configuration.externalWebhookUrl) {
+    return {
+      status: 400,
+      body: "Configuration Error! externalWebhookUrl is not set. Please set it in your bot integration configuration.",
+    };
+  }
+
   const data = JSON.parse(req.body);
 
   const { userId, messageId, conversationId, type, text, payload } = data;
