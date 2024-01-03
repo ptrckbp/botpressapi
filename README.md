@@ -10,11 +10,12 @@ You can see the full documentation [here](https://documenter.getpostman.com/view
 ## Getting started
 
 1. Clone this repo
-2. `npm i` 
-3. `npm run login`
-4. `npm run deploy`
-5. Go to your bot's workspace on https://app.botpress.cloud
-6. Click the gear icon on the top right corner, then "Integrations"
-7. Select "botpressapi" on the left hand navigation bar.
-8. Click "Install" on the top right button, then select the bot you'd like it installed with.
-9. Follow the instructions [here](https://documenter.getpostman.com/view/20577045/2s9YsDjEqu) to use the integration
+2. `cd botpressapi`
+3. `npm i` 
+4. `npm run login`
+5. `npm run deploy`
+6. Go to your bot's workspace on https://app.botpress.cloud
+7. Click the gear icon on the top right corner, then "Integrations"
+8. Select "botpressapi" on the left hand navigation bar.
+9. Click "Install" on the top right button, then select the bot you'd like it installed with.
+10. Follow the instructions [here](https://documenter.getpostman.com/view/20577045/2s9YsDjEqu) to use the integration
