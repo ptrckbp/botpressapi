@@ -2,7 +2,9 @@
 
 This is a simple integration for sending messages to your bot via API and recieving responses. 
 
-You can use this to send messages or other information back and forth between your bot and any back-end application.  
+One simple api endpoint to get responses from your bot. One configuration parameter to set the recieving endpoint for the bot responses. 
+
+Just send the required information and this integration takes care of gettting/creating users, conversations and messages in Botpress. 
 
 You can see the full documentation [here](https://documenter.getpostman.com/view/20577045/2s9YsDjEqu).
 
