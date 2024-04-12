@@ -1,22 +1,9 @@
 API and configurable endpoint to easily send messages to and from your bot via http requests. You can use this to send messages or other information back and forth between your bot and any back-end application.
 
 ## How it works
-You configure a webhook url for catching responses from your bot. Your bot may receive several responses for a single incomming message scattered through time. Each webhook invocation sends a single message back to your service.
+To send messages to your bot, use the API endpoint. When sending messages to your bot, you provide a conversationId parameter that will be sent back to your webhook url, so that you may identify where to send your bot's responses.
 
-The body of a webhook response should look like this:
-
-```typescript
-type WebhookResponse = {
-  type : string, 
-  payload : any, // contains the response text or metadata otherwise
-  conversationId: string, // use this to send the response to the write location
-  botpressUserId: string, // botpress user id for debugging 
-  botpressMessageId: string, // botpress message id for debugging 
-  botpressConversationId: string, // botpress conversation id for debugging
-}
-```
-
-You use the API endpoint below to send messages. When sending messages to your bot, you provide a conversationId parameter that will be sent back to your webhook url, so that you may identify where to send your bot's responses.
+To handle responses from your bot, you provide an endpoint url. Each request sent to this endpoint carries a single bot message, and includes the conversationId that was previously provided. Depending on your bot, you could recieve multiple responses, or no responses at all. 
 
 ## Getting started
 
@@ -37,15 +24,21 @@ All you need is an endpoint to catch your bot's responses that returns http stat
 | HEADERS | Authorization: bearer **PERSONAL_ACCESS_TOKEN** |
 
 Your request body should look like this:
-```typescript
-type BodyParameters = {
-  userId: string; // ensures that the message is added for the correct user, in case of multiple users
-  messageId: string; // helps prevent duplicates
-  conversationId: string; // identifies the conversation uniquely and is used for sending back responses
-  type: string; // should be 'text' if the message type is text, otherwise a different string for other types
-  text: string; // the text of the user's message if the type is text, or a summary of the payload for other types
-  payload: any; // an object containing any data you want to send, specific to the message type
-}
-```
 
-This allows you to send messages from your integration to Botpress. It responds with the created or existing user, message and conversation objects.
++ userId: (string, required) ensures that the message is added for the correct user, in case of multiple users
++ messageId: (string, required) helps prevent duplicates
++ conversationId: (string, required) identifies the conversation uniquely and is used for sending back responses
++ type: (string, required) should be 'text' if the message type is text, otherwise a different string for other types
++ text: (string, required) the text of the user's message if the type is text, or a summary of the payload for other types
++ payload: (any, required) an object containing any data you want to send, specific to the message type
+
+7. On your server, handle the response (make sure your bot is published and responds to messages). The request body should look like this:
+
++ type: (string, required) specifies the type of the message
++ payload: (any, required) contains the response text or metadata otherwise
++ conversationId: (string, required) use this to send the response to the correct location
++ botpressUserId: (string, required) Botpress user ID for debugging purposes
++ botpressMessageId: (string, required) Botpress message ID for debugging purposes
++ botpressConversationId: (string, required) Botpress conversation ID for debugging purposes
+
+
