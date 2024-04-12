@@ -18,27 +18,25 @@ All you need is an endpoint to catch your bot's responses that returns http stat
 5. In Botpress, click your avatar on the top right, then `Personal Access Tokens`. Create a new token and save it for later.
 6. Send an http request with the following content:
 
-| Method | POST |
-| ------ | ---- |
-| ENDPOINT | **INTEGRATION_WEBHOOK_URL** |
-| HEADERS | Authorization: bearer **PERSONAL_ACCESS_TOKEN** |
-
-Your request body should look like this:
-
-+ userId: (string, required) ensures that the message is added for the correct user, in case of multiple users
-+ messageId: (string, required) helps prevent duplicates
-+ conversationId: (string, required) identifies the conversation uniquely and is used for sending back responses
-+ type: (string, required) should be 'text' if the message type is text, otherwise a different string for other types
-+ text: (string, required) the text of the user's message if the type is text, or a summary of the payload for other types
-+ payload: (any, required) an object containing any data you want to send, specific to the message type
+- Endpoint: **{INTEGRATION_WEBHOOK_URL}** 
+- Method: POST
+- Headers:
+  - Authorization: bearer **{PERSONAL_ACCESS_TOKEN}** 
+- Body:
+  - userId: (string, required) ensures that the message is added for the correct user, in case of multiple users
+  - messageId: (string, required) helps prevent duplicates
+  - conversationId: (string, required) identifies the conversation uniquely and is used for sending back responses
+  - type: (string, required) should be 'text' if the message type is text, otherwise a different string for other types
+  - text: (string, required) the text of the user's message if the type is text, or a summary of the payload for other types
+  - payload: (any, required) an object containing any data you want to send, specific to the message type
 
 7. On your server, handle the response (make sure your bot is published and responds to messages). The request body should look like this:
-
-+ type: (string, required) specifies the type of the message
-+ payload: (any, required) contains the response text or metadata otherwise
-+ conversationId: (string, required) use this to send the response to the correct location
-+ botpressUserId: (string, required) Botpress user ID for debugging purposes
-+ botpressMessageId: (string, required) Botpress message ID for debugging purposes
-+ botpressConversationId: (string, required) Botpress conversation ID for debugging purposes
+- Body:
+  - type: (string, required) specifies the type of the message
+  - payload: (any, required) contains the response text or metadata otherwise
+  - conversationId: (string, required) use this to send the response to the correct location
+  - botpressUserId: (string, required) Botpress user ID for debugging purposes
+  - botpressMessageId: (string, required) Botpress message ID for debugging purposes
+  - botpressConversationId: (string, required) Botpress conversation ID for debugging purposes
 
 
