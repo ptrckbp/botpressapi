@@ -1,16 +1,16 @@
-import * as botpress from ".botpress";
-import { axios, Conversation } from "@botpress/client";
+import * as bpclient from '@botpress/client'
+import * as bp from ".botpress";
+import * as types from "./types";
 import handleIncoming from "./handle-incomming";
+import axios from "axios";
 
-const INTEGRATION_NAME = "botpressapi";
+const INTEGRATION_NAME = "plus/messaging";
 const idTag = `${INTEGRATION_NAME}:id` as const;
 
-export type IntegrationLogger = Parameters<
-  botpress.IntegrationProps["handler"]
->[0]["logger"];
+export type IntegrationLogger = types.Logger;
 
-export function getChat(conversation: Conversation): string {
-  const chat = conversation.tags[idTag];
+export function getChat(conversation: types.Conversation): string {
+  const chat = conversation.tags[idTag]
 
   if (!chat) {
     throw Error(`No chat found for conversation ${conversation.id}`);
@@ -23,16 +23,15 @@ const sendToWebhook = async ({
   payload,
   ctx,
   conversation,
-  ack,
   logger,
   user,
   type,
   message,
-}) => {
-  await axios.post(ctx.configuration.responseEndpoint, {
+}: types.MessageHandlerProps) => {
+  await axios.post(ctx.configuration.responseEndpointURL, {
     type,
     payload,
-    conversationId: conversation.tags["botpressapi:id"],
+    conversationId: conversation.tags[idTag],
     botpressUserId: user.id,
     botpressMessageId: message.id,
     botpressConversationId: conversation.id,
@@ -48,9 +47,27 @@ const sendToWebhook = async ({
     );
 };
 
-const integration = new botpress.Integration({
-  register: async ({ webhookUrl, ctx }) => {},
-  unregister: async ({ ctx }) => {},
+const integration = new bp.Integration({
+  register: async ({ ctx }) => {
+    if (!ctx.configuration.responseEndpointURL) {
+      throw new bpclient.RuntimeError(
+        "Configuration Error! responseEndpointURL is not set. Please set it in your bot integration configuration."
+      );
+    }
+    // try calling it to see if you get a 200
+    try {
+      await axios.post(ctx.configuration.responseEndpointURL, {
+        type: "test",
+        payload: "test",
+      });
+    } catch (error) {
+      throw new bpclient.RuntimeError(
+        "Configuration Error! responseEndpointURL is not reachable. It should return a 200."
+      );
+    }
+    return;
+  },
+  unregister: async ({}) => {},
   actions: {},
   channels: {
     channel: {
@@ -66,10 +83,10 @@ const integration = new botpress.Integration({
         carousel: sendToWebhook,
         dropdown: sendToWebhook,
         choice: sendToWebhook,
-      },
-    },
+      }
+    }
   },
-  handler: handleIncoming
+  handler: handleIncoming,
 });
 
 export default integration;

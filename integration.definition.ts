@@ -1,7 +1,6 @@
 import { IntegrationDefinition, messages } from '@botpress/sdk'
 import { z } from 'zod'
 
-
 export default new IntegrationDefinition({
   name: "plus/messaging",
   title: "Messaging Integration",
@@ -11,7 +10,7 @@ export default new IntegrationDefinition({
   icon: "botpress-icon.svg",
   configuration: {
     schema: z.object({
-      responseEndpoint: z.string().describe("the url the bot will send its messages to"),
+      responseEndpointURL: z.string().describe("The bot will send its messages to this URL"),
     }),
   },
   channels: {

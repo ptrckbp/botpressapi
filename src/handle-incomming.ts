@@ -1,4 +1,5 @@
-import { Client } from "@botpress/client";
+import { Client, isApiError } from "@botpress/client";
+import * as types from './types'
 import zod from "zod";
 
 const getInputIssues = (body: any): any[] => {
@@ -18,13 +19,14 @@ const getInputIssues = (body: any): any[] => {
   try {
     bodySchema.parse(body);
     return [];
-  } catch (e) {
+  } catch (thrown) {
+    const e = thrown as zod.ZodError
     // return the human readable error
     return e.issues;
   }
 };
 
-const handleIncoming = async ({ req, client, ctx, logger }) => {
+const handleIncoming = async ({ req, client, ctx, logger }: types.HandlerProps) => {
   // if path isn't /messages then return 404
   if (req.path !== "/messages") {
     return {
@@ -33,19 +35,20 @@ const handleIncoming = async ({ req, client, ctx, logger }) => {
     };
   }
 
-  // check if ctx.configuration.responseEndpoint is set
-  if (!ctx.configuration.responseEndpoint) {
+  // check if ctx.configuration.responseEndpointURL is set
+  if (!ctx.configuration.responseEndpointURL) {
     return {
       status: 400,
-      body: "Configuration Error! responseEndpoint is not set. Please set it in your bot integration configuration.",
+      body: "Configuration Error! responseEndpointURL is not set. Please set it in your bot integration configuration.",
     };
   }
 
-  const newAuthHeader = req.headers.authorization;
+  const newAuthHeader = req.headers.authorization!
   const token = newAuthHeader.split(" ")[1];
 
-  const integrationId = client.client.config.headers["x-integration-id"];
-  const botId = client.client.config.headers["x-bot-id"];
+  const innerClient = (client as any).client as Client
+  const integrationId = innerClient.config.headers["x-integration-id"] as string | undefined
+  const botId = innerClient.config.headers["x-bot-id"] as string | undefined
 
   const newClientConfig = {
     integrationId,
@@ -54,7 +57,7 @@ const handleIncoming = async ({ req, client, ctx, logger }) => {
   }
   const remotelyAuthenticatedClient = new Client(newClientConfig); // we use this client to make sure we are using a PAT token
 
-  const data = JSON.parse(req.body);
+  const data = JSON.parse(req.body!);
 
   const { userId, messageId, conversationId, type, text, payload } = data;
 
@@ -108,7 +111,7 @@ const handleIncoming = async ({ req, client, ctx, logger }) => {
     };
   } catch (error) {
     // check if error is a 401
-    if (error?.code === 401) {
+    if (isApiError(error) && error?.code === 401) {
       return {
         status: 401,
         body: "Unauthorized. Please add a valid token to the Authorization header. You can get it at https://app.botpress.cloud/profile/settings",
