@@ -29,7 +29,7 @@ const sendToWebhook = async ({
   type,
   message,
 }) => {
-  await axios.post(ctx.configuration.externalWebhookUrl, {
+  await axios.post(ctx.configuration.responseEndpoint, {
     type,
     payload,
     conversationId: conversation.tags["botpressapi:id"],

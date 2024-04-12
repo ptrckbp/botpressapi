@@ -1,14 +1,17 @@
 import { IntegrationDefinition, messages } from '@botpress/sdk'
-import { name } from './package.json'
 import { z } from 'zod'
 
 
 export default new IntegrationDefinition({
-  name,
+  name: "plus/messaging",
+  title: "Messaging Integration",
+  description: "This integration allows you to easily send messages to your bot and get responses back to your endpoint.",
   version: '0.2.0',
+  readme: 'README.md',
+  icon: "botpress-icon.svg",
   configuration: {
     schema: z.object({
-      externalWebhookUrl: z.string(),
+      responseEndpoint: z.string().describe("the url the bot will send its messages to"),
     }),
   },
   channels: {
