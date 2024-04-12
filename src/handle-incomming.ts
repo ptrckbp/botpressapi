@@ -27,8 +27,8 @@ const getInputIssues = (body: any): any[] => {
 };
 
 const handleIncoming = async ({ req, client, ctx, logger }: types.HandlerProps) => {
-  // if path isn't /messages then return 404
-  if (req.path !== "/messages") {
+  // if path isn't root then return 404
+  if (req.path !== "/" && req.path !== "") {
     return {
       status: 404,
       body: "Not found",

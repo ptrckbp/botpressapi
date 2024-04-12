@@ -6,7 +6,7 @@ export default new IntegrationDefinition({
   title: "Messaging Integration",
   description: "This integration allows you to easily send messages to your bot and get responses back to your endpoint.",
   version: '0.2.0',
-  readme: 'README.md',
+  readme: 'hub.md',
   icon: "botpress-icon.svg",
   configuration: {
     schema: z.object({
