@@ -1,3 +1,4 @@
+## What it is
 API and configurable endpoint to easily send messages to and from your bot via http requests. You can use this to send messages or other information back and forth between your bot and any back-end application.
 
 ## How it works

@@ -3,9 +3,9 @@ import { z } from 'zod'
 
 export default new IntegrationDefinition({
   name: "plus/messaging",
-  title: "Messaging Integration",
+  title: "Messaging API",
   description: "This integration allows you to easily send messages to your bot and get responses back to your endpoint.",
-  version: '0.2.0',
+  version: '0.2.2',
   readme: 'hub.md',
   icon: "botpress-icon.svg",
   configuration: {
