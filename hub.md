@@ -1,5 +1,8 @@
+
 ## What it is
 API and configurable endpoint to easily send messages to and from your bot via http requests. You can use this to send messages or other information back and forth between your bot and any back-end application.
+
+[![image](https://i.imgur.com/FgAinpn.png)](https://www.youtube.com/watch?v=f2RMv40omPA)
 
 ## How it works
 To send messages to your bot, use the API endpoint. When sending messages to your bot, you provide a conversationId parameter that will be sent back to your webhook url, so that you may identify where to send your bot's responses.
@@ -7,6 +10,9 @@ To send messages to your bot, use the API endpoint. When sending messages to you
 To handle responses from your bot, you provide an endpoint url. Each request sent to this endpoint carries a single bot message, and includes the conversationId that was previously provided. Depending on your bot, you could recieve multiple responses, or no responses at all. 
 
 ## Getting started
+
+[![image](https://i.imgur.com/6dqO43d.png)](https://www.youtube.com/watch?v=GJb1EK9dlOM)
+
 
 #### Pre-requisites
 All you need is an endpoint to catch your bot's responses that returns http status 200. For trying this out, we recommend a free endpoint on [Request Bin](https://pipedream.com/requestbin). 
