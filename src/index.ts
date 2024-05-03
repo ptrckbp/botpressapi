@@ -1,8 +1,9 @@
-import * as bpclient from '@botpress/client'
+import * as bpclient from "@botpress/client";
 import * as bp from ".botpress";
 import * as types from "./types";
 import handleIncoming from "./handle-incomming";
 import axios from "axios";
+import convertTextToAudio from "./convert-text-to-audio";
 
 const INTEGRATION_NAME = "plus/messaging";
 const idTag = `${INTEGRATION_NAME}:id` as const;
@@ -10,7 +11,7 @@ const idTag = `${INTEGRATION_NAME}:id` as const;
 export type IntegrationLogger = types.Logger;
 
 export function getChat(conversation: types.Conversation): string {
-  const chat = conversation.tags[idTag]
+  const chat = conversation.tags[idTag];
 
   if (!chat) {
     throw Error(`No chat found for conversation ${conversation.id}`);
@@ -18,6 +19,34 @@ export function getChat(conversation: types.Conversation): string {
 
   return chat;
 }
+
+const getAudioFromPayload = async (payload: any, openaiKey: string) => {
+  const text = payload.text;
+
+  const options = payload.options;
+
+  let readableString = "";
+
+  if (!payload.text) {
+    return null;
+  }
+
+  readableString = `${text}`;
+
+  if (options) {
+    readableString +=
+      "\n" +
+      options
+        .map((option: any) => {
+          return !!option?.title && `- ${option.title}`;
+        })
+        .join("\n");
+  }
+
+  const audioFile = await convertTextToAudio(readableString, "onyx", openaiKey);
+
+  return audioFile;
+};
 
 const sendToWebhook = async ({
   payload,
@@ -28,13 +57,29 @@ const sendToWebhook = async ({
   type,
   message,
 }: types.MessageHandlerProps) => {
-  await axios.post(ctx.configuration.responseEndpointURL, {
-    type,
-    payload,
-    conversationId: conversation.tags[idTag],
-    botpressUserId: user.id,
-    botpressMessageId: message.id,
-    botpressConversationId: conversation.id,
+  let file;
+
+  if (ctx.configuration.convertAllTextToAudio || payload?.forceAudio) {
+    file = await getAudioFromPayload(payload, ctx.configuration.openaiKey);
+  }
+
+  const formData = new FormData();
+
+  if (file) {
+    formData.append("audioFile", file);
+  }
+
+  formData.append("payload", JSON.stringify(payload));
+  formData.append("type", "audio");
+  formData.append("conversationId", conversation.tags[idTag]);
+  formData.append("botpressUserId", user.id);
+  formData.append("botpressMessageId", message.id);
+  formData.append("botpressConversationId", conversation.id);
+
+  await axios.post(ctx.configuration.responseEndpointURL, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
   });
 
   const chat = getChat(conversation);
@@ -83,8 +128,8 @@ const integration = new bp.Integration({
         carousel: sendToWebhook,
         dropdown: sendToWebhook,
         choice: sendToWebhook,
-      }
-    }
+      },
+    },
   },
   handler: handleIncoming,
 });

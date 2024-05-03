@@ -26,6 +26,20 @@ const getInputIssues = (body: any): any[] => {
   }
 };
 
+const getBody = async (req: any) => { 
+  
+  const data = JSON.parse(req.body);
+
+  const { userId, messageId, conversationId, type, text, audioUrl, payload } = data;
+
+  if (audioUrl){
+
+   }
+
+  return { userId, messageId, conversationId, type, text, payload }
+}
+
+
 const handleIncoming = async ({ req, client, ctx, logger }: types.HandlerProps) => {
   // if path isn't root then return 404
   if (req.path !== "/" && req.path !== "") {
@@ -57,12 +71,17 @@ const handleIncoming = async ({ req, client, ctx, logger }: types.HandlerProps) 
   }
   const remotelyAuthenticatedClient = new Client(newClientConfig); // we use this client to make sure we are using a PAT token
 
+
+  if (!req.body) {
+    return {
+      status: 400,
+      body: "Bad Request! Please provide a valid JSON body",
+    };
+  }
   const data = JSON.parse(req.body!);
 
-  const { userId, messageId, conversationId, type, text, payload } = data;
-
+    const { userId, messageId, conversationId, type, text, payload } = await getBody(req);
   const inputIssues = getInputIssues(data);
-
   if (inputIssues.length > 0) {
     return {
       status: 400,

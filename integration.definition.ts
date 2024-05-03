@@ -2,8 +2,8 @@ import { IntegrationDefinition, messages } from '@botpress/sdk'
 import { z } from 'zod'
 
 export default new IntegrationDefinition({
-  name: "plus/messaging",
-  title: "Messaging API",
+  name: "livestream/voice",
+  title: "Voice Messaging API",
   description: "This integration allows you to easily send messages to your bot and get responses back to your endpoint.",
   version: '0.2.3',
   readme: 'hub.md',
@@ -11,6 +11,8 @@ export default new IntegrationDefinition({
   configuration: {
     schema: z.object({
       responseEndpointURL: z.string().describe("The bot will send its messages to this URL"),
+      convertAllTextToAudio: z.boolean().describe("if true, the bot will convert text to audio before sending it to the responseEndpointURL").default(true),
+      openaiKey: z.string().describe("the OpenAI API key to use for text-to-speech and speech-to-text"),
     }),
   },
   channels: {
@@ -19,7 +21,6 @@ export default new IntegrationDefinition({
       message: { tags: { id: {} } },
       conversation: {
         tags: { id: {} },
-        creation: { enabled: true, requiredTags: ['id'] },
       },
     },
   },
@@ -27,6 +28,5 @@ export default new IntegrationDefinition({
     tags: {
       id: {}
     },
-    creation: { enabled: true, requiredTags: ['id'] },
   },
 })

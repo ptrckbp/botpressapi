@@ -1,11 +1,12 @@
 {
-  "name": "botpressapi",
+  "name": "botpressapilivestream",
   "scripts": {
     "version": "bp --version",
     "login": "bp login",
-    "dev": "bp dev",
+    "dev": "nodemon --watch \"./src/*\" --ext \"ts\" --exec \"bp deploy -y\"",
     "gen": "bp gen",
-    "deploy": "bp deploy"
+    "deploy": "bp deploy",
+    "test": "jest --watch"
   },
   "keywords": [],
   "private": true,
@@ -13,12 +14,20 @@
   "license": "MIT",
   "dependencies": {
     "@botpress/client": "^0.14.0",
-    "@botpress/sdk": "^0.6.15",
-    "axios": "^1.6.2",
+    "@botpress/sdk": "^0.8.2",
+    "axios": "^1.6.8",
+    "openai": "^4.40.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@babel/core": "^7.24.4",
+    "@babel/preset-env": "^7.24.4",
+    "@babel/preset-typescript": "^7.24.1",
     "@types/node": "^18.19.3",
+    "babel-jest": "^29.7.0",
+    "dotenv": "^16.4.5",
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.0",
     "ts-node": "^10.9.1",
     "typescript": "^4.9.5"
   }
